@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>HOI4 MP Name Forge v3</title>
+<style>
+:root{--bg:#ffffff;--fg:#1a1a1a;--muted:#666;--line:#ddd;--box:#f6f6f6;--input:#fff;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--thumb:#1d2430}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#e6e6e6;--muted:#9a9a9a;--line:#333;--box:#1c1c1c;--input:#181818;--accent:#60a5fa;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--thumb:#0c0f14}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#e6e6e6;--muted:#9a9a9a;--line:#333;--box:#1c1c1c;--input:#181818;--accent:#60a5fa;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--thumb:#0c0f14}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+code,.mono{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
+.shell{max-width:1400px;margin:0 auto;padding:0 16px}
+header{border-bottom:1px solid var(--line);padding:10px 0}
+header .shell{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+h1{font-size:18px;margin:0}
+.stats{color:var(--muted);font-size:12px;flex:1}
+nav{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:2px;overflow-x:auto}
+.tabbtn{border:0;border-bottom:2px solid transparent;background:none;padding:9px 12px;cursor:pointer;color:var(--muted);white-space:nowrap}
+.tabbtn.active{color:var(--fg);border-bottom-color:var(--accent)}
+main{padding:16px 0 60px}
+.tab{display:none}.tab.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{border:1px solid var(--line);border-radius:6px;padding:14px;min-width:0}
+.card h2{font-size:15px;margin:0 0 10px}
+.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+@media(max-width:900px){.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}}
+label{display:block;font-size:12px;color:var(--muted);margin:0 0 4px}
+input,select,textarea{width:100%;background:var(--input);border:1px solid var(--line);border-radius:4px;padding:7px 8px}
+input[type=checkbox]{width:auto}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+textarea{min-height:80px;resize:vertical}
+.row{display:flex;gap:8px;align-items:end}.row>*{flex:1}.row .fit{flex:0 0 auto}
+@media(max-width:650px){.row{flex-direction:column;align-items:stretch}}
+.btn{border:1px solid var(--line);background:var(--box);border-radius:4px;padding:7px 10px;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.ghost{background:none}
+.btn.small{padding:3px 7px;font-size:12px}
+.btn.on{border-color:var(--accent);color:var(--accent)}
+.btnbar{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.help{color:var(--muted);font-size:12.5px;margin:6px 0}
+.notice{border-left:3px solid var(--accent);background:var(--box);padding:8px 10px;font-size:13px}
+.notice.warn{border-color:var(--warn)}.notice.good{border-color:var(--ok)}
+.preview{min-height:60px;border:1px solid var(--line);border-radius:4px;padding:12px;font-size:20px;background:#2a2a2a;color:#eee;overflow-wrap:anywhere}
+.iconpill{display:inline-flex;align-items:center;gap:4px;border:1px solid #555;border-radius:4px;padding:1px 4px;font:12px ui-monospace,Consolas,monospace;vertical-align:middle}
+.thumb{display:inline-block;flex:0 0 auto;background-repeat:no-repeat;background-color:var(--thumb);border-radius:3px;vertical-align:middle}
+.icon-fallback{display:inline-grid;place-items:center;flex:0 0 auto;color:var(--muted);border:1px dashed var(--line);border-radius:3px;font-size:12px}
+.rawbox{font:12px ui-monospace,Consolas,monospace;word-break:break-all;background:var(--box);border:1px solid var(--line);border-radius:4px;padding:8px;min-height:40px}
+.segment{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-top:1px solid var(--line)}
+.segment .drag{color:var(--muted)}.segment-title{font-weight:600}.segment-meta{color:var(--muted);font:11px ui-monospace,monospace;word-break:break-all}
+.segment-actions{display:flex;gap:3px}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:10px}
+.color-grid,.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+.flag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:10px}
+.icon-card,.color-card,.template-card,.flag-card{border:1px solid var(--line);border-radius:5px;padding:8px;min-width:0}
+.icon-card.works{border-color:var(--ok)}.icon-card.broken{border-color:var(--bad);opacity:.65}
+.icon-card .top,.color-card .top,.flag-card .top{display:flex;align-items:center;gap:8px;min-width:0}
+.icon-card .name{font-weight:600;overflow-wrap:anywhere}
+.icon-card .id{font:11px ui-monospace,monospace;color:var(--muted);word-break:break-all;margin-top:5px}
+.tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.tag{font-size:10.5px;border:1px solid var(--line);border-radius:3px;padding:0 4px;color:var(--muted);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:var(--ok)}.tag.lazy{color:var(--warn);border-color:var(--warn)}.tag.big{color:var(--bad);border-color:var(--bad)}.tag.new{color:var(--accent);border-color:var(--accent)}
+.swatch{width:26px;height:26px;border-radius:4px;border:1px solid var(--line)}
+.code{display:inline-grid;place-items:center;min-width:22px;height:22px;border:1px solid var(--line);border-radius:3px;font:600 12px ui-monospace,monospace}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.toolbar input{min-width:200px;flex:1;width:auto}
+.toolbar select{width:auto;max-width:240px}
+.check{display:flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap}
+.count{color:var(--muted);font-size:12px}
+hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+details{margin-top:8px}summary{cursor:pointer;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.status{position:fixed;right:14px;bottom:14px;z-index:80;background:var(--fg);color:var(--bg);border-radius:4px;padding:7px 11px;opacity:0;pointer-events:none;transition:opacity .15s}
+.status.show{opacity:1}
+.drop{border:1px dashed var(--muted);border-radius:5px;padding:18px;text-align:center}
+.drop.drag{border-color:var(--accent)}
+.experimental,.verified{display:inline-block;font-size:11px;border:1px solid;border-radius:3px;padding:0 5px;font-weight:400}
+.experimental{color:var(--warn)}.verified{color:var(--ok)}
+.typeahead{position:relative}
+.ta-list{position:absolute;left:0;right:0;top:100%;z-index:40;max-height:340px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:4px;margin-top:2px;display:none}
+.ta-list.open{display:block}
+.ta-item{display:flex;align-items:center;gap:8px;padding:4px 6px;cursor:pointer;font:12px ui-monospace,monospace}
+.ta-item:hover,.ta-item.sel{background:var(--box)}
+.ta-item small{color:var(--muted);font-family:system-ui,sans-serif}
+.more{display:flex;justify-content:center;margin-top:12px}
+.flagimg{flex:0 0 auto;width:41px;height:26px;background-repeat:no-repeat;border:1px solid var(--line)}
+footer{border-top:1px solid var(--line);padding:14px 0 30px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="shell">
+    <h1>HOI4 MP Name Forge v3</h1>
+    <span class="stats"><span id="totalCount">0</span> sprites · <span id="alwaysCount">0</span> always loaded · <span id="newCount">0</span> new since v2 · 23 colors · <span id="flagCount">0</span> flags</span>
+    <button class="btn small" id="themeBtn" title="Switch between light and dark">Theme: auto</button>
+  </div>
+</header>
+<nav>
+  <div class="shell tabs">
+    <button class="tabbtn active" data-tab="builder">Name Builder</button>
+    <button class="tabbtn" data-tab="icons">Icon Library</button>
+    <button class="tabbtn" data-tab="colors">All Colors</button>
+    <button class="tabbtn" data-tab="flags">Flags</button>
+    <button class="tabbtn" data-tab="templates">Templates</button>
+    <button class="tabbtn" data-tab="import">Import</button>
+    <button class="tabbtn" data-tab="lab">Experimental Lab</button>
+    <button class="tabbtn" data-tab="research">Research &amp; Limits</button>
+  </div>
+</nav>
+<main class="shell">
+<section class="tab active" id="builder">
+  <div class="grid">
+    <div class="card span-5">
+      <h2>Add pieces</h2>
+      <div class="row">
+        <div><label>Plain text</label><input id="plainText" placeholder="e.g. micro master"></div>
+        <button class="btn fit" id="addPlain">Add text</button>
+      </div>
+      <hr>
+      <div class="row">
+        <div><label>Colored text</label><input id="colorText" placeholder="e.g. NO SUPPLY"></div>
+        <div><label>Color</label><select id="colorSelect"></select></div>
+        <button class="btn fit" id="addColor">Add color</button>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="typeahead"><label>Icon ID</label><input id="iconInput" autocomplete="off" placeholder="Search all sprites or type an ID"><div class="ta-list" id="taList"></div></div>
+        <div style="max-width:95px"><label>Frame</label><input id="iconFrame" type="number" min="0" placeholder="—"></div>
+        <button class="btn fit" id="addIcon">Add icon</button>
+      </div>
+      <p class="help">You can type the ID with or without <code>GFX_</code>. Frame is optional and experimental in name fields.</p>
+      <hr>
+      <div class="row">
+        <div><label>Rainbow text</label><input id="rainbowText" placeholder="e.g. CLICK THE BUBBLE"></div>
+        <div><label>Palette</label><select id="rainbowPalette"><option value="gradient">Hidden 0–9,t gradient</option><option value="classic">Classic colors</option></select></div>
+        <button class="btn fit" id="addRainbow">Add rainbow</button>
+      </div>
+      <div class="btnbar">
+        <button class="btn ghost small" id="addSpace">Add space</button>
+        <button class="btn ghost small" id="addDivider">Add · divider</button>
+        <button class="btn ghost small" id="clearAll">Clear builder</button>
+      </div>
+    </div>
+
+    <div class="card span-7">
+      <h2>Preview and copy</h2>
+      <div class="notice">Icon previews are thumbnails of the game textures. In-game, a sprite is drawn at its real size, shown as <code>w×h</code>. A 400 px blueprint will cover the chat.</div>
+      <div class="preview" id="preview" style="margin-top:12px"></div>
+      <div class="btnbar">
+        <button class="btn primary" id="copyFinal">Copy HOI4 name</button>
+        <button class="btn" id="copyPowerShell">Copy PowerShell fallback</button>
+        <button class="btn" id="copyDebug">Copy readable form</button>
+      </div>
+      <p class="help" id="lengthInfo"></p>
+      <label>Readable control-code view</label>
+      <div class="rawbox" id="debugOutput"></div>
+      <details>
+        <summary>Raw string box</summary>
+        <p class="help">The control characters are invisible on purpose. Select all here and press Ctrl+C if the copy button is blocked.</p>
+        <textarea id="rawOutput" readonly></textarea>
+      </details>
+    </div>
+
+    <div class="card span-12">
+      <h2>Segments</h2>
+      <p class="help">Use the arrows to reorder pieces. Each colored segment is reset automatically so the color doesn't spill into later text.</p>
+      <div id="segmentList"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="icons">
+  <div class="card">
+    <h2>Every sprite in your install</h2>
+    <p class="help">Scanned from every <code>interface/**/*.gfx</code> in vanilla, <code>integrated_dlc</code> and <code>dlc</code>. <strong>Always loaded</strong> sprites (<code>legacy_lazy_load = no</code>) include all of <code>texticons.gfx</code> and the confirmed-working <code>TC_heavy_tank_artillery_chassis_fra</code>. Lazy-loaded sprites (most focus icons, for example) will probably show as text. Mark what you test so the next search shows what works.</p>
+    <div class="toolbar">
+      <input id="iconSearch" placeholder="Search: railway, heavy tank, GER, blueprint, medal...">
+      <select id="fLoad">
+        <option value="always">Always loaded (likely works)</option>
+        <option value="">Any load mode</option>
+        <option value="lazy">Lazy-loaded only</option>
+      </select>
+      <select id="fGroup"><option value="">All groups</option></select>
+      <select id="fFile"><option value="">All files</option></select>
+      <select id="fSource"><option value="">Vanilla + all DLC</option><option value="v">Vanilla only</option><option value="d">DLC + integrated only</option></select>
+      <select id="fSize">
+        <option value="">Any size</option>
+        <option value="s">Chat-sized (≤ 40 px)</option>
+        <option value="m">Medium (41–128 px)</option>
+        <option value="l">Huge (129–256 px)</option>
+        <option value="xl">Extra big (&gt; 256 px)</option>
+        <option value="big">Huge + extra big (&gt; 128 px)</option>
+      </select>
+      <select id="fSort">
+        <option value="">Sort: default</option>
+        <option value="area-desc">Sort: biggest first</option>
+        <option value="area-asc">Sort: smallest first</option>
+        <option value="w-desc">Sort: widest first</option>
+        <option value="h-desc">Sort: tallest first</option>
+        <option value="name">Sort: ID A–Z</option>
+      </select>
+      <select id="fTest">
+        <option value="">Any test status</option>
+        <option value="works">Marked works</option>
+        <option value="broken">Marked broken</option>
+        <option value="untested">Untested</option>
+        <option value="fav">Favorites ★</option>
+      </select>
+      <label class="check"><input type="checkbox" id="fNew"> New since v2 only</label>
+      <span class="count" id="iconCount"></span>
+    </div>
+    <div class="btnbar">
+      <button class="btn small" id="batch10">Copy test batch (first 10 shown)</button>
+      <button class="btn small" id="batch5">Copy test batch (first 5 shown)</button>
+      <button class="btn small ghost" id="exportTests">Export test results</button>
+    </div>
+    <p class="help">A test batch puts the numbers 1–N before each icon (<code>1⟨icon⟩2⟨icon⟩…</code>). Paste it as your name, and any icon that renders as text is broken. Then mark each card.</p>
+    <div class="icon-grid" id="iconGrid"></div>
+    <div class="more"><button class="btn" id="showMore">Show more</button></div>
+  </div>
+</section>
+
+<section class="tab" id="colors">
+  <div class="card">
+    <h2>All global color codes</h2>
+    <p class="help">These are all 23 codes in <code>core.gfx → textcolors</code>: the classic letters plus the hidden <strong>0–9</strong> and lowercase <strong>t</strong> gradient. Fonts only override existing letters and add no new codes.</p>
+    <div class="row">
+      <div><label>Text used by color buttons</label><input id="colorSample" value="COLOR"></div>
+      <button class="btn fit" id="rainbowFromColors">Send full gradient to builder</button>
+    </div>
+    <div class="color-grid" id="colorGrid"></div>
+  </div>
+</section>
+
+<section class="tab" id="flags">
+  <div class="card">
+    <h2>Country flags <span class="experimental">untested in name fields</span></h2>
+    <p class="help">In localisation, <code>@TAG</code> draws a country flag. Nobody has confirmed this works in MP names. Each card copies the variants you pick so you can test them. Previews come from <code>gfx/flags/medium</code>.</p>
+    <div class="toolbar">
+      <input id="flagSearch" placeholder="Search tag or country name">
+      <select id="flagVariant">
+        <option value="at">@TAG (plain)</option>
+        <option value="dc3at">DC3 + @TAG + DC3</option>
+        <option value="dc3">DC3 + TAG + DC3</option>
+        <option value="dc2">DC2 + TAG + DC2</option>
+        <option value="dc4">DC4 + TAG + DC4</option>
+        <option value="all">All variants, numbered 1–5</option>
+      </select>
+      <span class="count" id="flagCountShown"></span>
+    </div>
+    <div class="flag-grid" id="flagGrid"></div>
+  </div>
+</section>
+
+<section class="tab" id="templates">
+  <div class="card">
+    <h2>MP templates</h2>
+    <p class="help">You can edit each template after loading it.</p>
+    <div class="template-grid" id="templateGrid"></div>
+  </div>
+</section>
+
+<section class="tab" id="import">
+  <div class="grid">
+    <div class="card span-7">
+      <h2>Import extra .gfx files</h2>
+      <div class="drop" id="dropZone">
+        <strong>Drop any <code>*.gfx</code> files here</strong>
+        <p class="help">or choose files below</p>
+        <input id="fileInput" type="file" accept=".gfx,.txt" multiple>
+      </div>
+      <p class="help">Vanilla and DLC are already built in. Use this after a patch, or for mod sprites. Remember that other players only see mod sprites if they run the same mod.</p>
+      <div class="btnbar">
+        <button class="btn" id="clearImported">Remove imported icons</button>
+        <button class="btn" id="exportCatalog">Export merged catalog JSON</button>
+      </div>
+      <div class="notice" id="importStatus" style="margin-top:12px">No local files imported yet.</div>
+    </div>
+    <div class="card span-5">
+      <h2>What the parser reads</h2>
+      <p class="help">It reads <code>name</code>, <code>texturefile</code>, <code>noOfFrames</code> and <code>legacy_lazy_load</code> from <code>spriteType</code>, <code>frameAnimatedSpriteType</code>, <code>textSpriteType</code>, <code>corneredTileSpriteType</code>, progress-bar and shield blocks, including nested ones, and strips <code>GFX_</code> from the name. Imported sprites have no preview image.</p>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="lab">
+  <div class="grid">
+    <div class="card span-6">
+      <h2>Frame tester <span class="experimental">experimental in name fields</span></h2>
+      <p class="help">Builds every frame variant of a multi-frame sprite so you can paste it in and see which frames work.</p>
+      <div class="row">
+        <div><label>Icon ID</label><input id="frameIcon" value="weather"></div>
+        <div style="max-width:120px"><label>Frames</label><input id="frameCount" type="number" value="7" min="1" max="30"></div>
+        <button class="btn fit" id="makeFrames">Build test strip</button>
+      </div>
+    </div>
+    <div class="card span-6">
+      <h2>Control-character wrapper <span class="experimental">untested</span></h2>
+      <p class="help">DC1 is color and DC3 is icon. Other control characters (DC2, DC4, ESC…) might trigger other text-formatter features. This wraps any text in the character you pick, for testing.</p>
+      <div class="row">
+        <div><label>Character</label><select id="ctrlChar"></select></div>
+        <div><label>Content</label><input id="ctrlText" value="GER"></div>
+        <label class="check fit" style="margin:0 0 12px;text-transform:none;letter-spacing:0"><input type="checkbox" id="ctrlClose" checked> close</label>
+        <button class="btn fit" id="copyCtrl">Copy</button>
+      </div>
+    </div>
+    <div class="card span-6">
+      <h2>Invisible-character lab <span class="experimental">not HOI4-verified</span></h2>
+      <p class="help">These are ordinary Unicode blanks. HOI4 may strip them or show them as boxes.</p>
+      <div class="btnbar" id="invisibleButtons"></div>
+    </div>
+    <div class="card span-6">
+      <h2>Control-character inspector</h2>
+      <p class="help">Paste a strange name to see its hidden DC1/DC3 markers and Unicode code points.</p>
+      <textarea id="inspectInput" placeholder="Paste a generated or copied name here"></textarea>
+      <div class="btnbar"><button class="btn" id="inspectBtn">Inspect</button></div>
+      <div class="rawbox" id="inspectOutput"></div>
+    </div>
+    <div class="card span-12">
+      <h2>Raw token generator</h2>
+      <div class="row">
+        <div><label>Icon ID</label><input id="rawIconId" value="TC_heavy_tank_artillery_chassis_fra"></div>
+        <button class="btn fit" id="copyRawIcon">Copy icon token</button>
+        <div><label>Color code</label><input id="rawColorCode" value="R" maxlength="1"></div>
+        <div><label>Text</label><input id="rawColorText" value="RED"></div>
+        <button class="btn fit" id="copyRawColor">Copy colored text</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="research">
+  <div class="grid">
+    <div class="card span-7">
+      <h2>What is known</h2>
+      <table>
+        <tr><th>Method</th><th>Encoding</th><th>Status</th></tr>
+        <tr><td>Colored names</td><td><code>DC1 + code + text + DC1 + !</code></td><td><span class="verified">Community verified</span></td></tr>
+        <tr><td>Text icons</td><td><code>DC3 + ID + DC3</code>, ID without <code>GFX_</code></td><td><span class="verified">Community verified</span></td></tr>
+        <tr><td>Non-texticon sprites</td><td><code>DC3 + TC_heavy_tank_artillery_chassis_fra + DC3</code></td><td><span class="verified">Seen in a live MP lobby</span></td></tr>
+        <tr><td>Other always-loaded sprites</td><td><code>legacy_lazy_load = no</code>, ~4.8k IDs</td><td><span class="experimental">Strong hypothesis</span></td></tr>
+        <tr><td>Lazy-loaded sprites (focus icons…)</td><td>no <code>legacy_lazy_load</code></td><td><span class="experimental">Reported not working</span></td></tr>
+        <tr><td><code>£</code> in name field</td><td><code>£ID£</code></td><td><span class="experimental">Tested: shows as text</span></td></tr>
+        <tr><td>Multi-frame suffix</td><td><code>ID|frame</code></td><td><span class="experimental">Needs test</span></td></tr>
+        <tr><td>Flags</td><td><code>@TAG</code> and variants</td><td><span class="experimental">Needs test</span></td></tr>
+      </table>
+    </div>
+    <div class="card span-5">
+      <h2>The v2 claim was wrong</h2>
+      <div class="notice warn">v2 said only <code>texticons.gfx</code> entries work. A player used <code>TC_heavy_tank_artillery_chassis_fra</code>, the tank-designer blueprint of the French heavy SPG from <code>tank_modules_blueprint_overlay.gfx</code>.</div>
+      <p class="help">The pattern: all 472 flagged sprites in <code>texticons.gfx</code> and that blueprint have <code>legacy_lazy_load = no</code>, so their textures are always in memory. Focus icons are lazy-loaded, and players report they don't render. "Textable" most likely means "always loaded", so the library filters on that flag by default.</p>
+      <p class="help">DLC sprites probably only render for players who own that DLC. The game may also limit name length, and control characters count toward it.</p>
+    </div>
+    <div class="card span-12">
+      <h2>Sources</h2>
+      <ul class="help" style="line-height:1.8">
+        <li>Your local install: every <code>interface/**/*.gfx</code>, <code>core.gfx</code> textcolors, <code>common/country_tags</code>, <code>gfx/flags/medium</code></li>
+        <li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2539061581" target="_blank" rel="noreferrer">Steam guide: HOI4 colored names and the hidden control character</a></li>
+        <li><a href="https://steamcommunity.com/app/394360/discussions/0/6725643618952900577/" target="_blank" rel="noreferrer">Steam discussion: DC3 icon names and the "textable" limitation</a></li>
+        <li><a href="https://hoi4.paradoxwikis.com/Localisation" target="_blank" rel="noreferrer">HOI4 wiki: Localisation (text icons, frames, flags)</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="shell">HOI4 MP Name Forge v3 · catalog generated from your local install · imported files and test marks stay in this browser.</div></footer>
+<div class="status" id="toast">Copied</div>
+<script src="catalog-data.js"></script>
+<script>
+const COLORS = [{"code":"C","name":"Cyan","rgb":"35,206,255","hex":"#23ceff","group":"Classic"},{"code":"L","name":"Lilac","rgb":"195,176,145","hex":"#c3b091","group":"Classic"},{"code":"W","name":"White","rgb":"255,255,255","hex":"#ffffff","group":"Classic"},{"code":"B","name":"Blue","rgb":"0,0,255","hex":"#0000ff","group":"Classic"},{"code":"G","name":"Green","rgb":"0,159,3","hex":"#009f03","group":"Classic"},{"code":"R","name":"Red","rgb":"255,50,50","hex":"#ff3232","group":"Classic"},{"code":"b","name":"Black","rgb":"0,0,0","hex":"#000000","group":"Classic"},{"code":"g","name":"Grey","rgb":"176,176,176","hex":"#b0b0b0","group":"Classic"},{"code":"Y","name":"Yellow","rgb":"255,189,0","hex":"#ffbd00","group":"Classic"},{"code":"H","name":"Header yellow","rgb":"255,189,0","hex":"#ffbd00","group":"Classic"},{"code":"T","name":"Title white","rgb":"255,255,255","hex":"#ffffff","group":"Classic"},{"code":"O","name":"Orange","rgb":"255,112,25","hex":"#ff7019","group":"Classic"},{"code":"0","name":"Gradient purple","rgb":"203,0,203","hex":"#cb00cb","group":"Hidden gradient"},{"code":"1","name":"Gradient lilac","rgb":"128,120,211","hex":"#8078d3","group":"Hidden gradient"},{"code":"2","name":"Gradient blue","rgb":"81,112,243","hex":"#5170f3","group":"Hidden gradient"},{"code":"3","name":"Gradient navy","rgb":"81,143,220","hex":"#518fdc","group":"Hidden gradient"},{"code":"4","name":"Gradient light blue","rgb":"90,190,231","hex":"#5abee7","group":"Hidden gradient"},{"code":"5","name":"Gradient cyan","rgb":"63,181,194","hex":"#3fb5c2","group":"Hidden gradient"},{"code":"6","name":"Gradient turquoise","rgb":"119,204,186","hex":"#77ccba","group":"Hidden gradient"},{"code":"7","name":"Gradient light green","rgb":"153,209,153","hex":"#99d199","group":"Hidden gradient"},{"code":"8","name":"Gradient mustard","rgb":"204,163,51","hex":"#cca333","group":"Hidden gradient"},{"code":"9","name":"Gradient orange","rgb":"252,169,125","hex":"#fca97d","group":"Hidden gradient"},{"code":"t","name":"Gradient red","rgb":"255,76,77","hex":"#ff4c4d","group":"Hidden gradient"}];
+const DC1 = String.fromCharCode(17), DC3 = String.fromCharCode(19);
+const colorMap = Object.fromEntries(COLORS.map(c=>[c.code,c]));
+const PAGE = 240;
+
+function load(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch(e){return fallback}}
+function store(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
+let importedIcons = load("hoi4v3Imported",[]);
+let segments = load("hoi4v3Segments",load("hoi4Segments",[]));
+let tests = load("hoi4v3Tests",{});      // id -> "works" | "broken"
+let favs = new Set(load("hoi4v3Favs",[]));
+
+/* ---------- catalog ---------- */
+const C = CATALOG;
+function prettify(id){return id.replace(/_/g," ").replace(/\s+/g," ").trim().replace(/\b\w/g,x=>x.toUpperCase())}
+const BUILT = C.rows.map(r=>({
+  id:r[0], label:r[1]||prettify(r[0]), group:C.groups[r[2]], file:C.files[r[3]], source:C.sources[r[4]],
+  frames:r[5], always:!!(r[6]&1), curated:!!(r[6]&2), kind:C.kinds[r[7]], sheet:r[8], slot:r[9], w:r[10], h:r[11]
+}));
+BUILT.forEach(i=>{i.hay=(i.id+" "+i.label+" "+i.file+" "+i.group+" "+i.source).toLowerCase()});
+let ALL=[], BYID=new Map();
+function rebuildAll(){
+  const map=new Map(BUILT.map(i=>[i.id,i]));
+  importedIcons.forEach(i=>{if(!map.has(i.id))map.set(i.id,{...i,hay:(i.id+" "+i.file+" imported").toLowerCase(),sheet:-1,slot:-1,w:0,h:0,group:"Imported",source:"Imported"})});
+  ALL=[...map.values()];
+  BYID=map;
+}
+rebuildAll();
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+function thumbHTML(id,size=34){
+  const i=BYID.get(id);
+  if(!i||i.sheet<0)return `<span class="icon-fallback" style="width:${size}px;height:${size}px" title="No preview for ${esc(id)}">?</span>`;
+  const k=size/C.cell, col=i.slot%C.cols, row=Math.floor(i.slot/C.cols);
+  const sheet=String(i.sheet).padStart(2,"0");
+  return `<span class="thumb" role="img" aria-label="${esc(id)}" title="${esc(id)}${i.w?` · ${i.w}×${i.h}`:""}" style="width:${size}px;height:${size}px;background-image:url('atlas/atlas-${sheet}.webp');background-size:${C.cols*C.cell*k}px auto;background-position:-${col*C.cell*k}px -${row*C.cell*k}px"></span>`;
+}
+function maxDim(i){return Math.max(i.w||0,i.h||0)}
+
+/* ---------- utilities ---------- */
+function toast(msg="Copied"){
+ const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
+ clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove("show"),1700);
+}
+async function copyText(text,msg){
+ try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);toast(msg);return}}catch(e){}
+ const ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");
+ ta.style.position="fixed";ta.style.left="-9999px";ta.style.top="0";document.body.appendChild(ta);
+ ta.focus();ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}
+ ta.remove();toast(ok?(msg||"Copied"):"Select the raw box and press Ctrl+C");
+}
+function save(){store("hoi4v3Segments",segments);store("hoi4v3Imported",importedIcons);store("hoi4v3Tests",tests);store("hoi4v3Favs",[...favs])}
+function colorString(code,text){return DC1+code+text+DC1+"!"}
+function iconString(id,frame){return DC3+id+(frame!==""&&frame!=null?`|${frame}`:"")+DC3}
+function cleanId(s){return String(s).trim().replace(/^GFX_/,"")}
+function gameString(){
+ return segments.map(s=>{
+  if(s.type==="text"||s.type==="raw")return s.text||"";
+  if(s.type==="color")return colorString(s.code,s.text||"");
+  if(s.type==="icon")return iconString(s.id,s.frame);
+  return "";
+ }).join("");
+}
+function readable(str){
+ return [...str].map(ch=>{
+  const n=ch.codePointAt(0);
+  if(n===17)return "⟨DC1⟩";if(n===18)return "⟨DC2⟩";if(n===19)return "⟨DC3⟩";if(n===20)return "⟨DC4⟩";
+  if(n===10)return "⟨LF⟩";if(n===13)return "⟨CR⟩";
+  if(n<32||n===127)return `⟨U+${n.toString(16).toUpperCase().padStart(4,"0")}⟩`;
+  return ch;
+ }).join("");
+}
+
+/* ---------- builder ---------- */
+function previewHTML(){
+ return segments.map(s=>{
+  if(s.type==="text"||s.type==="raw")return esc(s.text||"");
+  if(s.type==="color"){
+   const c=colorMap[s.code]||{hex:"#fff"};
+   const shadow=(s.code==="b")?"text-shadow:0 0 2px #fff;":"";
+   return `<span style="color:${c.hex};${shadow}">${esc(s.text||"")}</span>`;
+  }
+  if(s.type==="icon"){
+   const i=BYID.get(s.id);const dims=i&&i.w?` ${i.w}×${i.h}`:"";
+   return `<span class="iconpill">${thumbHTML(s.id,38)} ${esc(s.id)}${s.frame!==""&&s.frame!=null?`|${esc(s.frame)}`:""}<small style="color:#a08c62">${dims}</small></span>`;
+  }
+  return "";
+ }).join("");
+}
+function renderBuilder(){
+ const str=gameString();
+ document.getElementById("preview").innerHTML=previewHTML()||'<span style="color:#64707c">Your name appears here</span>';
+ document.getElementById("debugOutput").textContent=readable(str)||"Nothing added yet.";
+ document.getElementById("rawOutput").value=str;
+ const unknown=segments.filter(s=>s.type==="icon"&&!BYID.has(s.id)).map(s=>s.id);
+ const lazy=segments.filter(s=>s.type==="icon"&&BYID.has(s.id)&&!BYID.get(s.id).always).map(s=>s.id);
+ const big=segments.filter(s=>s.type==="icon"&&BYID.has(s.id)&&maxDim(BYID.get(s.id))>128).map(s=>s.id);
+ let info=`Visible approximation: ${segments.reduce((n,s)=>n+(s.text||"").length+(s.type==="icon"?1:0),0)} · Raw UTF-16 units sent to HOI4: ${str.length}`;
+ if(unknown.length)info+=` · Not in catalog: ${unknown.join(", ")}`;
+ if(lazy.length)info+=` · Lazy-loaded (may show as text): ${lazy.join(", ")}`;
+ if(big.length)info+=` · Huge in-game: ${big.join(", ")}`;
+ document.getElementById("lengthInfo").textContent=info;
+ const list=document.getElementById("segmentList");
+ list.innerHTML=segments.map((s,i)=>{
+   const title=s.type==="icon"?`Icon: ${s.id}`:s.type==="color"?`Color ${s.code}: ${s.text}`:`Text: ${s.text||"(empty)"}`;
+   const meta=s.type==="icon"?readable(iconString(s.id,s.frame)):s.type==="color"?readable(colorString(s.code,s.text||"")):s.text||"";
+   return `<div class="segment">
+    <div class="drag">${i+1}</div>
+    <div><div class="segment-title">${esc(title)}</div><div class="segment-meta">${esc(meta)}</div></div>
+    <div class="segment-actions">
+      <button class="btn small ghost" data-seg="up" data-i="${i}" title="Move up">↑</button>
+      <button class="btn small ghost" data-seg="down" data-i="${i}" title="Move down">↓</button>
+      <button class="btn small danger" data-seg="del" data-i="${i}">×</button>
+    </div>
+   </div>`;
+ }).join("")||'<p class="help">No segments yet. Add text, colors, icons or a rainbow, or load a template.</p>';
+ save();
+}
+document.getElementById("segmentList").addEventListener("click",e=>{
+ const b=e.target.closest("[data-seg]");if(!b)return;const i=+b.dataset.i;
+ if(b.dataset.seg==="del")segments.splice(i,1);
+ else{const j=i+(b.dataset.seg==="up"?-1:1);if(j<0||j>=segments.length)return;[segments[i],segments[j]]=[segments[j],segments[i]]}
+ renderBuilder();
+});
+function addSegment(s,go=true){segments.push(s);renderBuilder();if(go)switchTab("builder")}
+function makeRainbowParts(text,palette="gradient"){
+ const codes=palette==="gradient"?["0","1","2","3","4","5","6","7","8","9","t"]:["R","O","Y","G","C","B","L"];
+ let idx=0,parts=[];
+ for(const ch of text){
+  if(/\s/.test(ch))parts.push({type:"text",text:ch});
+  else parts.push({type:"color",code:codes[idx++%codes.length],text:ch});
+ }
+ return parts;
+}
+function switchTab(id){
+ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.id===id));
+ document.querySelectorAll(".tabbtn").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));
+ try{history.replaceState(null,"","#"+id)}catch(e){}
+ if(id==="icons"&&!iconsRendered)renderIcons();
+ if(id==="flags"&&!flagsRendered)renderFlags();
+ window.scrollTo({top:document.querySelector("nav").offsetTop,behavior:"smooth"});
+}
+document.querySelectorAll(".tabbtn").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
+
+/* ---------- typeahead ---------- */
+function searchIcons(q,limit){
+ q=q.trim().toLowerCase().replace(/^gfx_/,"");if(!q)return [];
+ const exact=[],starts=[],has=[];
+ for(const i of ALL){
+  const id=i.id.toLowerCase();
+  if(id===q)exact.push(i);else if(id.startsWith(q))starts.push(i);else if(i.hay.includes(q))has.push(i);
+  if(exact.length+starts.length>=limit)break;
+ }
+ const rank=a=>(a.always?0:1);
+ starts.sort((a,b)=>rank(a)-rank(b));has.sort((a,b)=>rank(a)-rank(b));
+ return [...exact,...starts,...has].slice(0,limit);
+}
+const taInput=document.getElementById("iconInput"),taList=document.getElementById("taList");
+let taSel=-1,taItems=[];
+function renderTA(){
+ taItems=searchIcons(taInput.value,40);taSel=-1;
+ taList.innerHTML=taItems.map((i,n)=>`<div class="ta-item" data-n="${n}">${thumbHTML(i.id,26)}<div>${esc(i.id)}<br><small>${esc(i.group)} · ${i.always?"always loaded":"lazy"}${i.w?` · ${i.w}×${i.h}`:""}</small></div></div>`).join("");
+ taList.classList.toggle("open",taItems.length>0);
+}
+taInput.addEventListener("input",renderTA);
+taInput.addEventListener("keydown",e=>{
+ const items=taList.querySelectorAll(".ta-item");
+ if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();if(!items.length)return;taSel=(taSel+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;items.forEach((x,n)=>x.classList.toggle("sel",n===taSel));items[taSel].scrollIntoView({block:"nearest"})}
+ else if(e.key==="Enter"){e.preventDefault();if(taSel>=0)taInput.value=taItems[taSel].id;taList.classList.remove("open");document.getElementById("addIcon").click()}
+ else if(e.key==="Escape")taList.classList.remove("open");
+});
+taList.addEventListener("mousedown",e=>{const it=e.target.closest(".ta-item");if(!it)return;e.preventDefault();taInput.value=taItems[+it.dataset.n].id;taList.classList.remove("open")});
+taInput.addEventListener("blur",()=>setTimeout(()=>taList.classList.remove("open"),150));
+
+/* ---------- colors ---------- */
+function setupColors(){
+ document.getElementById("colorSelect").innerHTML=COLORS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join("");
+ document.getElementById("colorGrid").innerHTML=COLORS.map(c=>`<div class="color-card">
+   <div class="top"><span class="swatch" style="background:${c.hex}"></span><span class="code">${esc(c.code)}</span><div><strong>${esc(c.name)}</strong><div class="help">${c.group} · rgb(${c.rgb})</div></div></div>
+   <div class="btnbar"><button class="btn small" data-color-add="${esc(c.code)}">Add to builder</button><button class="btn small ghost" data-color-copy="${esc(c.code)}">Copy sample</button></div>
+ </div>`).join("");
+}
+document.getElementById("colorGrid").addEventListener("click",e=>{
+ const t=document.getElementById("colorSample").value||"COLOR";
+ const a=e.target.closest("[data-color-add]"),c=e.target.closest("[data-color-copy]");
+ if(a)addSegment({type:"color",code:a.dataset.colorAdd,text:t});
+ if(c)copyText(colorString(c.dataset.colorCopy,t));
+});
+
+/* ---------- icon library ---------- */
+let iconsRendered=false,shown=PAGE,filtered=[];
+function setupFilters(){
+ const groups=[...new Set(ALL.map(i=>i.group))].sort();
+ const gs=document.getElementById("fGroup"),gv=gs.value;
+ gs.innerHTML='<option value="">All groups</option>'+groups.map(g=>`<option>${esc(g)}</option>`).join("");gs.value=gv;
+ refreshFileFilter();
+}
+function refreshFileFilter(){
+ const g=document.getElementById("fGroup").value;
+ const files=[...new Set(ALL.filter(i=>!g||i.group===g).map(i=>i.file))].sort();
+ const fs=document.getElementById("fFile"),fv=fs.value;
+ fs.innerHTML='<option value="">All files</option>'+files.map(f=>`<option>${esc(f)}</option>`).join("");
+ fs.value=files.includes(fv)?fv:"";
+}
+function applyFilters(){
+ const q=document.getElementById("iconSearch").value.trim().toLowerCase().replace(/^gfx_/,"");
+ const load=document.getElementById("fLoad").value,g=document.getElementById("fGroup").value,f=document.getElementById("fFile").value;
+ const src=document.getElementById("fSource").value,size=document.getElementById("fSize").value,test=document.getElementById("fTest").value;
+ const onlyNew=document.getElementById("fNew").checked;
+ const terms=q.split(/\s+/).filter(Boolean);
+ filtered=ALL.filter(i=>{
+  if(load==="always"&&!i.always)return false;
+  if(load==="lazy"&&i.always)return false;
+  if(g&&i.group!==g)return false;
+  if(f&&i.file!==f)return false;
+  if(src==="v"&&i.source!=="Vanilla")return false;
+  if(src==="d"&&!/^(DLC|Integrated)/.test(i.source))return false;
+  if(size){const d=maxDim(i);if(!d)return false;if(size==="s"&&d>40)return false;if(size==="m"&&(d<=40||d>128))return false;if(size==="l"&&(d<=128||d>256))return false;if(size==="xl"&&d<=256)return false;if(size==="big"&&d<=128)return false}
+  if(test==="fav"&&!favs.has(i.id))return false;
+  if(test==="works"&&tests[i.id]!=="works")return false;
+  if(test==="broken"&&tests[i.id]!=="broken")return false;
+  if(test==="untested"&&tests[i.id])return false;
+  if(onlyNew&&i.curated)return false;
+  for(const t of terms)if(!i.hay.includes(t))return false;
+  return true;
+ });
+ const sort=document.getElementById("fSort").value,area=i=>(i.w||0)*(i.h||0),byId=(a,b)=>a.id.localeCompare(b.id);
+ const sorters={
+  "area-desc":(a,b)=>area(b)-area(a)||byId(a,b),
+  "area-asc":(a,b)=>(!area(a))-(!area(b))||area(a)-area(b)||byId(a,b),
+  "w-desc":(a,b)=>(b.w||0)-(a.w||0)||area(b)-area(a)||byId(a,b),
+  "h-desc":(a,b)=>(b.h||0)-(a.h||0)||area(b)-area(a)||byId(a,b),
+  "name":byId,
+ };
+ filtered.sort(sorters[sort]||((a,b)=>(b.curated-a.curated)||((tests[b.id]==="works")-(tests[a.id]==="works"))||(b.always-a.always)||byId(a,b)));
+}
+function cardHTML(i){
+ const d=maxDim(i),st=tests[i.id]||"";
+ const src=i.source==="Vanilla"?"":`<span class="tag">${esc(i.source.replace(/^(DLC|Integrated): dlc\d+_/,"$1: "))}</span>`;
+ return `<div class="icon-card ${st}" data-id="${esc(i.id)}">
+  <div class="top">${thumbHTML(i.id,48)}<div style="min-width:0"><div class="name">${esc(i.label)}</div>
+   <div class="tags">${i.always?'<span class="tag ok">always loaded</span>':'<span class="tag lazy">lazy</span>'}${i.curated?"":'<span class="tag new">new</span>'}${d?`<span class="tag ${d>128?"big":""}">${i.w}×${i.h}</span>`:""}${d>256?'<span class="tag big">extra big</span>':""}${i.frames>1?`<span class="tag">${i.frames} frames</span>`:""}${i.kind!=="spritetype"?`<span class="tag">${esc(i.kind)}</span>`:""}${src}</div></div></div>
+  <div class="id">${esc(i.id)}</div>
+  <div class="help" style="font-size:.72rem">${esc(i.file)}</div>
+  <div class="btnbar">
+   <button class="btn small" data-act="add">Add</button>
+   <button class="btn small ghost" data-act="copy">Copy</button>
+   <button class="btn small ghost ${favs.has(i.id)?"on":""}" data-act="fav" title="Favorite">★</button>
+   <button class="btn small ghost ${st==="works"?"on":""}" data-act="works" title="Mark: renders in game">✓ works</button>
+   <button class="btn small ghost ${st==="broken"?"on":""}" data-act="broken" title="Mark: shows as text">✗</button>
+   ${i.frames>1?'<button class="btn small ghost" data-act="frames">Frames</button>':""}
+  </div>
+ </div>`;
+}
+function renderIcons(reset=true){
+ iconsRendered=true;
+ if(reset){applyFilters();shown=PAGE}
+ document.getElementById("iconCount").textContent=`${filtered.length.toLocaleString()} match · ${ALL.length.toLocaleString()} total`;
+ document.getElementById("iconGrid").innerHTML=filtered.slice(0,shown).map(cardHTML).join("")||'<p class="help">No matching sprites.</p>';
+ document.getElementById("showMore").style.display=filtered.length>shown?"":"none";
+}
+document.getElementById("showMore").onclick=()=>{
+ const grid=document.getElementById("iconGrid");
+ grid.insertAdjacentHTML("beforeend",filtered.slice(shown,shown+PAGE).map(cardHTML).join(""));
+ shown+=PAGE;document.getElementById("showMore").style.display=filtered.length>shown?"":"none";
+};
+document.getElementById("iconGrid").addEventListener("click",e=>{
+ const b=e.target.closest("[data-act]");if(!b)return;
+ const card=b.closest(".icon-card"),id=card.dataset.id,i=BYID.get(id),act=b.dataset.act;
+ if(act==="add")addSegment({type:"icon",id,frame:""});
+ else if(act==="copy")copyText(iconString(id,""),`Copied ${id}`);
+ else if(act==="frames"){document.getElementById("frameIcon").value=id;document.getElementById("frameCount").value=Math.min(30,i.frames);switchTab("lab")}
+ else{
+  if(act==="fav"){favs.has(id)?favs.delete(id):favs.add(id)}
+  else{tests[id]=tests[id]===act?undefined:act;if(!tests[id])delete tests[id]}
+  save();card.outerHTML=cardHTML(i);
+ }
+});
+let searchTimer;
+document.getElementById("iconSearch").addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>renderIcons(),180)});
+["fLoad","fFile","fSource","fSize","fSort","fTest","fNew"].forEach(id=>document.getElementById(id).addEventListener("change",()=>renderIcons()));
+document.getElementById("fGroup").addEventListener("change",()=>{refreshFileFilter();renderIcons()});
+function batch(n){
+ if(!iconsRendered)renderIcons();
+ const ids=filtered.slice(0,n).map(i=>i.id);if(!ids.length)return toast("Nothing to batch");
+ copyText(ids.map((id,k)=>(k+1)+iconString(id,"")).join(""),`Copied batch: ${ids.length} icons`);
+}
+document.getElementById("batch10").onclick=()=>batch(10);
+document.getElementById("batch5").onclick=()=>batch(5);
+document.getElementById("exportTests").onclick=()=>download("hoi4-name-icon-tests.json",JSON.stringify({works:Object.keys(tests).filter(k=>tests[k]==="works"),broken:Object.keys(tests).filter(k=>tests[k]==="broken"),favorites:[...favs]},null,2));
+function download(name,text){
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ---------- flags ---------- */
+let flagsRendered=false;
+const DC2=String.fromCharCode(18),DC4=String.fromCharCode(20);
+function flagString(tag,v){
+ const vs={at:"@"+tag,dc3at:DC3+"@"+tag+DC3,dc3:DC3+tag+DC3,dc2:DC2+tag+DC2,dc4:DC4+tag+DC4};
+ if(v==="all")return ["at","dc3at","dc3","dc2","dc4"].map((k,n)=>(n+1)+vs[k]).join(" ");
+ return vs[v];
+}
+function renderFlags(){
+ flagsRendered=true;
+ const q=document.getElementById("flagSearch").value.trim().toLowerCase();
+ const list=C.flags.filter(f=>!q||f[0].toLowerCase().includes(q)||f[1].toLowerCase().includes(q));
+ document.getElementById("flagCountShown").textContent=`${list.length} of ${C.flags.length}`;
+ document.getElementById("flagGrid").innerHTML=list.map(f=>{
+  const col=f[2]%20,row=Math.floor(f[2]/20);
+  return `<div class="flag-card" data-tag="${esc(f[0])}"><div class="top"><span class="flagimg" style="background-image:url('atlas/flags.webp');background-position:-${col*41}px -${row*26}px"></span><div style="min-width:0"><strong>${esc(f[0])}</strong><div class="help" style="font-size:.75rem;overflow-wrap:anywhere">${esc(f[1])}</div></div></div>
+   <div class="btnbar"><button class="btn small" data-flag="copy">Copy</button><button class="btn small ghost" data-flag="add">Add</button></div></div>`;
+ }).join("");
+}
+document.getElementById("flagSearch").addEventListener("input",renderFlags);
+document.getElementById("flagGrid").addEventListener("click",e=>{
+ const b=e.target.closest("[data-flag]");if(!b)return;
+ const tag=b.closest(".flag-card").dataset.tag,s=flagString(tag,document.getElementById("flagVariant").value);
+ if(b.dataset.flag==="copy")copyText(s,`Copied ${tag} test`);else addSegment({type:"raw",text:s});
+});
+
+/* ---------- templates ---------- */
+const templates = [
+ {name:"Schneider Moment",desc:"The giant French SPG blueprint that started v3. It is huge in-game.",parts:[["icon","TC_heavy_tank_artillery_chassis_fra"]]},
+ {name:"Rifle Doctrine Merchant",desc:"The classic gun + doctrine flex.",parts:[["icon","infantry_equipment_text_icon"],["text"," "],["color","R","CLICK BUBBLE"],["text"," "],["icon","doctrine_mod"]]},
+ {name:"No Supply Enjoyer",desc:"A red logistics disaster.",parts:[["icon","out_of_power_texticon"],["text"," "],["color","R","NO SUPPLY"],["text"," "],["icon","supply_texticon"]]},
+ {name:"Factory Gremlin",desc:"Civs, mils and dockyards.",parts:[["icon","civ_factory"],["icon","mil_factory"],["icon","nav_dockyard_texticon"],["text"," "],["color","O","GREMLIN"]]},
+ {name:"Heavy Tank Taxpayer",desc:"The heavy-tank lobby menace.",parts:[["icon","unit_heavy_armor_icon_small"],["text"," "],["color","Y","HEAVY TAXPAYER"]]},
+ {name:"Elephantry Field Marshal",desc:"Yes, vanilla has an elephantry text icon.",parts:[["icon","unit_elephantry_icon_small"],["text"," "],["color","G","FIELD MARSHAL"]]},
+ {name:"Railway Gun Diplomat",desc:"Negotiations have concluded.",parts:[["icon","unit_railway_gun_icon_small"],["text"," "],["color","R","DIPLOMAT"]]},
+ {name:"Submarine Accountant",desc:"Blue-water bookkeeping.",parts:[["icon","ship_submarine_icon_small"],["text"," "],["color","C","ACCOUNTANT"],["text"," "],["icon","navy_experience"]]},
+ {name:"CAS Is Balanced",desc:"Air-controller propaganda.",parts:[["icon","unit_cas_icon_small"],["text"," "],["color","Y","CAS IS BALANCED"]]},
+ {name:"Weather Main",desc:"Uses the regular weather sprite.",parts:[["icon","weather"],["text"," "],["color","4","WEATHER MAIN"]]},
+ {name:"Political Power Negative",desc:"The focus-tree experience.",parts:[["icon","pol_power"],["text"," "],["color","R","-500 PP"]]},
+ {name:"Infinite Micro",desc:"Infinity plus army experience.",parts:[["icon","infinity_icon"],["text"," "],["color","G","MICRO"],["text"," "],["icon","army_experience"]]},
+ {name:"Locked In",desc:"Simple and clean.",parts:[["icon","locked"],["text"," "],["color","t","LOCKED IN"]]},
+ {name:"Port Strike Victim",desc:"Based on the community-confirmed example icon.",parts:[["icon","mapicon_port_strike_result_text"],["text"," "],["color","R","PORT STRIKE VICTIM"]]},
+ {name:"Research Slot Beggar",desc:"Tech icon and a desperate request.",parts:[["icon","research_icon"],["text"," "],["color","C","+1 SLOT PLEASE"]]},
+ {name:"Puppet With Autonomy",desc:"Contradictory by design.",parts:[["icon","puppet_texticon"],["text"," "],["color","L","TOTALLY AUTONOMOUS"],["text"," "],["icon","autonomy_texticon"]]},
+ {name:"Convoy Donor",desc:"For naval MP generosity.",parts:[["icon","convoy_texticon"],["text"," "],["color","O","FREE CONVOYS"]]},
+ {name:"Signal Company CEO",desc:"Fast reinforce-rate enthusiast.",parts:[["icon","unit_signal_company_icon_small"],["text"," "],["color","6","CEO OF SIGNALS"]]},
+ {name:"Bicycle Meta",desc:"The forbidden speed build.",parts:[["icon","unit_bicycle_battalion_icon_small"],["text"," "],["color","7","BICYCLE META"]]},
+ {name:"Rainbow Observer",desc:"Full hidden gradient.",rainbow:"OBSERVER"},
+ {name:"Naval Dominance",desc:"A compact blue naval tag.",parts:[["icon","naval_dominance_texticon"],["text"," "],["color","B","SEA CONTROL"],["text"," "],["icon","ship_battleship_icon_small"]]},
+ {name:"Fake Intel Real Skill",desc:"The spy-agency special.",parts:[["icon","unit_fake_intel_unit_icon_small"],["text"," "],["color","5","REAL SKILL"]]},
+ {name:"Maintenance Main",desc:"Reliability is a lifestyle.",parts:[["icon","unit_maintenance_company_icon_small"],["text"," "],["color","G","99% RELIABILITY"]]},
+ {name:"No Step Back",desc:"Railway, supply, tank.",parts:[["icon","railways_texticon"],["icon","supply_texticon"],["icon","unit_medium_armor_icon_small"],["text"," "],["color","R","NO STEP BACK"]]},
+ {name:"Missiolini Moment",desc:"One of the stranger vanilla text icons.",parts:[["icon","ITA_missiolini_text_icon"],["text"," "],["color","O","MISSION COMPLETE"]]}
+];
+function renderTemplates(){
+ document.getElementById("templateGrid").innerHTML=templates.map((t,i)=>`<div class="template-card">
+   <strong>${esc(t.name)}</strong><p class="help">${esc(t.desc)}</p>
+   <button class="btn small" data-tpl="${i}">Load template</button>
+ </div>`).join("");
+}
+document.getElementById("templateGrid").addEventListener("click",e=>{
+ const b=e.target.closest("[data-tpl]");if(!b)return;const t=templates[+b.dataset.tpl];
+ segments=t.rainbow?makeRainbowParts(t.rainbow,"gradient"):t.parts.map(p=>p[0]==="icon"?{type:"icon",id:p[1],frame:""}:p[0]==="color"?{type:"color",code:p[1],text:p[2]}:{type:"text",text:p[1]});
+ renderBuilder();switchTab("builder");toast("Template loaded");
+});
+
+/* ---------- import ---------- */
+function parseGfx(text,fileName){
+ text=text.replace(/#[^\n]*/g,"");
+ const out=[],re=/\b(spriteType|frameAnimatedSpriteType|textSpriteType|corneredTileSpriteType|progressbartype|maskedShieldType|circularProgressBarType)\s*=\s*\{/gi;let m;
+ while((m=re.exec(text))){
+  let depth=1,p=re.lastIndex;
+  while(p<text.length&&depth){if(text[p]==="{")depth++;else if(text[p]==="}")depth--;p++}
+  const body=text.slice(re.lastIndex,p-1);
+  const nm=body.match(/\bname\s*=\s*"?([^"\s}]+)"?/i);if(!nm)continue;
+  const fr=body.match(/\bnoOfFrames\s*=\s*(\d+)/i),lz=body.match(/\blegacy_lazy_load\s*=\s*(\w+)/i);
+  const id=nm[1].replace(/^GFX_/,"");if(!id||id.length>160)continue;
+  out.push({id,label:prettify(id),file:fileName,frames:fr?Math.max(1,+fr[1]):1,always:!!(lz&&lz[1].toLowerCase()==="no"),curated:false,kind:m[1].toLowerCase()});
+ }
+ return out;
+}
+function importText(text,fileName){
+ const parsed=parseGfx(text,fileName);
+ const map=new Map(importedIcons.map(i=>[i.id,i]));parsed.forEach(i=>map.set(i.id,i));importedIcons=[...map.values()];
+ save();rebuildAll();setupFilters();if(iconsRendered)renderIcons();updateCounts();
+ const fresh=parsed.filter(i=>!BUILT.some(b=>b.id===i.id)).length;
+ document.getElementById("importStatus").textContent=`Read ${parsed.length} sprite definitions from ${fileName} (${fresh} not in the built-in catalog). Imported total: ${importedIcons.length}.`;
+ toast(`Imported ${parsed.length} sprites`);
+}
+function handleFile(file){if(!file)return;const r=new FileReader();r.onload=()=>importText(String(r.result),file.name);r.readAsText(file)}
+const dz=document.getElementById("dropZone");
+["dragenter","dragover"].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add("drag")}));
+["dragleave","drop"].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove("drag")}));
+dz.addEventListener("drop",e=>[...e.dataTransfer.files].forEach(handleFile));
+document.getElementById("fileInput").addEventListener("change",e=>[...e.target.files].forEach(handleFile));
+document.getElementById("clearImported").onclick=()=>{importedIcons=[];save();rebuildAll();setupFilters();if(iconsRendered)renderIcons();updateCounts();document.getElementById("importStatus").textContent="Imported icons cleared.";toast("Imported icons cleared")};
+document.getElementById("exportCatalog").onclick=()=>download("hoi4-sprite-catalog.json",JSON.stringify(ALL.map(({hay,...i})=>i)));
+
+/* ---------- lab ---------- */
+const invisibleChars=[["Hangul Filler","\\u3164","ㅤ"],["Braille Blank","\\u2800","⠀"],["Zero Width Space","\\u200B","\u200B"],["Zero Width Non-Joiner","\\u200C","\u200C"],["Word Joiner","\\u2060","\u2060"],["Ideographic Space","\\u3000","　"],["Narrow No-Break Space","\\u202F"," "],["Figure Space","\\u2007"," "]];
+document.getElementById("invisibleButtons").innerHTML=invisibleChars.map((x,i)=>`<button class="btn small" data-inv="${i}">${esc(x[0])} <span class="help">${esc(x[1])}</span></button>`).join("");
+document.getElementById("invisibleButtons").addEventListener("click",e=>{const b=e.target.closest("[data-inv]");if(b)copyText(invisibleChars[+b.dataset.inv][2])});
+const CTRL_NAMES=["NUL","SOH","STX","ETX","EOT","ENQ","ACK","BEL","BS","TAB","LF","VT","FF","CR","SO","SI","DLE","DC1 (color)","DC2","DC3 (icon)","DC4","NAK","SYN","ETB","CAN","EM","SUB","ESC","FS","GS","RS","US"];
+document.getElementById("ctrlChar").innerHTML=CTRL_NAMES.map((n,i)=>i?`<option value="${i}"${i===18?" selected":""}>U+${i.toString(16).toUpperCase().padStart(4,"0")} ${n}</option>`:"").join("");
+document.getElementById("copyCtrl").onclick=()=>{const c=String.fromCharCode(+document.getElementById("ctrlChar").value),t=document.getElementById("ctrlText").value;copyText(c+t+(document.getElementById("ctrlClose").checked?c:""))};
+document.getElementById("makeFrames").onclick=()=>{
+ const id=cleanId(document.getElementById("frameIcon").value);
+ const n=Math.max(1,Math.min(30,Number(document.getElementById("frameCount").value)||1));
+ for(let i=1;i<=n;i++){segments.push({type:"icon",id,frame:String(i)});if(i<n)segments.push({type:"text",text:" "})}
+ renderBuilder();switchTab("builder");
+};
+document.getElementById("inspectBtn").onclick=()=>{
+ const s=document.getElementById("inspectInput").value;
+ document.getElementById("inspectOutput").innerHTML=[...s].map((ch,i)=>{
+  const cp=ch.codePointAt(0),name=cp<32?CTRL_NAMES[cp]:cp===32?"SPACE":"";
+  return `${i}: U+${cp.toString(16).toUpperCase().padStart(4,"0")} ${esc(name)} ${cp>32?`“${esc(ch)}”`:""}`;
+ }).join("<br>")||"Nothing to inspect.";
+};
+document.getElementById("copyRawIcon").onclick=()=>copyText(iconString(cleanId(document.getElementById("rawIconId").value),""));
+document.getElementById("copyRawColor").onclick=()=>copyText(colorString(document.getElementById("rawColorCode").value.slice(0,1),document.getElementById("rawColorText").value));
+
+/* ---------- builder controls ---------- */
+function toBase64UTF8(s){return btoa(unescape(encodeURIComponent(s)))}
+function psCommand(s){return `$b='${toBase64UTF8(s)}'; Set-Clipboard -Value ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($b)))`}
+document.getElementById("addPlain").onclick=()=>{const e=document.getElementById("plainText");if(e.value)addSegment({type:"text",text:e.value});e.value=""};
+document.getElementById("addColor").onclick=()=>{const e=document.getElementById("colorText");if(e.value)addSegment({type:"color",code:document.getElementById("colorSelect").value,text:e.value});e.value=""};
+document.getElementById("addIcon").onclick=()=>{const id=cleanId(taInput.value);if(id)addSegment({type:"icon",id,frame:document.getElementById("iconFrame").value});taInput.value="";document.getElementById("iconFrame").value=""};
+document.getElementById("addRainbow").onclick=()=>{const e=document.getElementById("rainbowText");if(e.value){segments.push(...makeRainbowParts(e.value,document.getElementById("rainbowPalette").value));renderBuilder()}e.value=""};
+document.getElementById("addSpace").onclick=()=>addSegment({type:"text",text:" "});
+document.getElementById("addDivider").onclick=()=>addSegment({type:"text",text:" · "});
+document.getElementById("clearAll").onclick=()=>{if(confirm("Clear the whole builder?")){segments=[];renderBuilder()}};
+document.getElementById("copyFinal").onclick=()=>copyText(gameString());
+document.getElementById("copyPowerShell").onclick=()=>copyText(psCommand(gameString()));
+document.getElementById("copyDebug").onclick=()=>copyText(readable(gameString()));
+document.getElementById("rainbowFromColors").onclick=()=>{segments.push(...makeRainbowParts(document.getElementById("colorSample").value||"RAINBOW","gradient"));renderBuilder();switchTab("builder")};
+
+function updateCounts(){
+ document.getElementById("totalCount").textContent=ALL.length.toLocaleString();
+ document.getElementById("alwaysCount").textContent=ALL.filter(i=>i.always).length.toLocaleString();
+ document.getElementById("newCount").textContent=ALL.filter(i=>!i.curated).length.toLocaleString();
+ document.getElementById("flagCount").textContent=C.flags.length;
+}
+/* ---------- theme ---------- */
+const THEMES=["auto","dark","light"];
+function applyTheme(t){
+ if(t==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);
+ document.getElementById("themeBtn").textContent="Theme: "+t;store("hoi4v3Theme",t);
+}
+document.getElementById("themeBtn").onclick=()=>{const cur=load("hoi4v3Theme","auto");applyTheme(THEMES[(THEMES.indexOf(cur)+1)%3])};
+applyTheme(load("hoi4v3Theme","auto"));
+
+setupColors();setupFilters();renderTemplates();renderBuilder();updateCounts();
+const initial=location.hash.slice(1);if(initial&&document.getElementById(initial))switchTab(initial);
+</script>
+</body>
+</html>
